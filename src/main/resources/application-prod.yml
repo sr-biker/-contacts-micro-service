@@ -1,0 +1,17 @@
+spring:
+  jpa:
+    # Prod never auto-migrates the schema — only validates it matches the entities.
+    # Schema changes must be applied deliberately (e.g. via a migration tool) before deploy.
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    com.senthil.contacts: INFO
+    org.hibernate.SQL: WARN
+
+management:
+  endpoint:
+    health:
+      show-details: never
