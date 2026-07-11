@@ -6,7 +6,7 @@ metadata:
     {{- include "contacts-micro-service.labels" . | nindent 4 }}
 spec:
   selector:
-    {{- include "contacts-micro-service.labels" . | nindent 4 }}
+    {{- include "contacts-micro-service.selectorLabels" . | nindent 4 }}
   ports:
     - name: http
       port: {{ .Values.service.port }}

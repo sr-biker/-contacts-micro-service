@@ -6,6 +6,7 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+environment: prod
 springProfile: prod
 
 ingress:
@@ -32,7 +33,7 @@ probes:
     failureThreshold: 3
 
 # No plain db.* values in prod — populate a Kubernetes Secret named below (out-of-band, e.g.
-# synced from the rds module's Secrets Manager entry: live/prod/rds outputs
+# synced from the rds module's Secrets Manager entry: infra repo's prod/rds unit outputs
 # master_user_secret_arn) with keys DB_HOST/DB_PORT/DB_NAME/DB_USERNAME/DB_PASSWORD.
 db:
   existingSecret: contacts-db-credentials

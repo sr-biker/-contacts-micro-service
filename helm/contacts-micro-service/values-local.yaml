@@ -5,6 +5,7 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+environment: local
 springProfile: local
 
 ingress:

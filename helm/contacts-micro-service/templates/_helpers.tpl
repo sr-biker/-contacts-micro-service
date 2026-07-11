@@ -2,9 +2,14 @@
 contacts-micro-service
 {{- end -}}
 
-{{- define "contacts-micro-service.labels" -}}
+{{- define "contacts-micro-service.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "contacts-micro-service.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+
+{{- define "contacts-micro-service.labels" -}}
+{{ include "contacts-micro-service.selectorLabels" . }}
+environment: {{ .Values.environment }}
 {{- end -}}
 
 {{- define "contacts-micro-service.secretName" -}}

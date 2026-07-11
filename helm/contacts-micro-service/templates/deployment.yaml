@@ -8,7 +8,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "contacts-micro-service.labels" . | nindent 6 }}
+      {{- include "contacts-micro-service.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:

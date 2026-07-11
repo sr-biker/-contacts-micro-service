@@ -5,6 +5,10 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+# Used as the "environment" label on every k8s object this chart creates (metadata only —
+# never in selector.matchLabels, which stay stable via selectorLabels in _helpers.tpl).
+environment: local
+
 # Spring profile to activate — local or prod (see application-local.yml / application-prod.yml
 # in the contacts-micro-service repo).
 springProfile: local
