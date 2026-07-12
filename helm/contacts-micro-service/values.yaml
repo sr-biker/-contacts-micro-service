@@ -4,6 +4,11 @@ image:
   repository: contacts-micro-service
   tag: latest
   pullPolicy: IfNotPresent
+  # imagePullSecrets entry -- needed for ECR since kubelet has no built-in ECR credential
+  # provider configured on this self-managed cluster (no EKS-optimized AMI, no
+  # ecr-credential-provider plugin installed). Unset for local (kind loads images
+  # directly, no pull needed).
+  pullSecretName: ""
 
 # Used as the "environment" label on every k8s object this chart creates (metadata only —
 # never in selector.matchLabels, which stay stable via selectorLabels in _helpers.tpl).
@@ -58,6 +63,18 @@ db:
   # entirely when dbSecretFetch.enabled (see below) -- that path doesn't use a k8s Secret
   # at all.
   existingSecret: ""
+
+# Refreshes the imagePullSecret named image.pullSecretName periodically -- ECR auth
+# tokens expire after ~12h, so a one-time-created Secret goes stale. Off by default
+# (local doesn't pull from ECR at all); prod turns it on.
+ecrRefresh:
+  enabled: false
+  schedule: "0 */6 * * *"
+  region: us-east-1
+  # Registry host to authenticate against, e.g. <account>.dkr.ecr.<region>.amazonaws.com
+  # -- not the full repository path, just the host portion.
+  registry: ""
+  secretName: ecr-registry
 
 # Command-override credential fetch: the container's own entrypoint calls
 # `aws secretsmanager get-secret-value` (using the node's instance-profile credentials --

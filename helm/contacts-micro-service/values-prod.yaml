@@ -4,6 +4,9 @@ image:
   repository: 605448157849.dkr.ecr.us-east-1.amazonaws.com/contacts-micro-service
   tag: 02c7d767
   pullPolicy: IfNotPresent
+  # Refreshed periodically by a CronJob (templates/ecr-registry-refresh-cronjob.yaml) --
+  # ECR auth tokens expire after ~12h.
+  pullSecretName: ecr-registry
 
 environment: prod
 springProfile: prod
@@ -37,6 +40,12 @@ db:
   host: infra-prod-rds-postgres.cmx2qymsqgue.us-east-1.rds.amazonaws.com
   port: "5432"
   name: appdb
+
+ecrRefresh:
+  enabled: true
+  region: us-east-1
+  registry: 605448157849.dkr.ecr.us-east-1.amazonaws.com
+  secretName: ecr-registry
 
 dbSecretFetch:
   enabled: true
