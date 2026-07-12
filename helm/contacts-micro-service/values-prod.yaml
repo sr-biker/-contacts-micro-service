@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: 605448157849.dkr.ecr.us-east-1.amazonaws.com/contacts-micro-service
-  tag: 3f584f2e
+  tag: 02c7d767
   pullPolicy: IfNotPresent
 
 environment: prod
