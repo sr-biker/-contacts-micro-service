@@ -44,15 +44,31 @@ probes:
     periodSeconds: 5
     failureThreshold: 3
 
-# Plain DB env vars, used when db.existingSecret is not set. Fine for local (values-local.yaml);
-# prod (values-prod.yaml) sets db.existingSecret instead and leaves these unset.
+# host/port/name are never secret -- always plain values, set individually as env vars
+# regardless of where username/password come from. Fine for local (values-local.yaml) as-is;
+# prod (values-prod.yaml) points these at the real RDS endpoint.
 db:
   host: ""
   port: "5432"
   name: ""
   username: ""
   password: ""
-  # Name of a pre-existing Kubernetes Secret with DB_USERNAME/DB_PASSWORD/DB_HOST/DB_PORT/DB_NAME
-  # keys. When set, this is used instead of the plain db.* values above — populate it out-of-band
-  # (e.g. synced from the rds module's Secrets Manager entry) before deploying.
+  # Name of a pre-existing Kubernetes Secret with DB_USERNAME/DB_PASSWORD keys. Used via
+  # envFrom instead of the plain db.username/db.password values above, when set. Ignored
+  # entirely when dbSecretFetch.enabled (see below) -- that path doesn't use a k8s Secret
+  # at all.
   existingSecret: ""
+
+# Command-override credential fetch: the container's own entrypoint calls
+# `aws secretsmanager get-secret-value` (using the node's instance-profile credentials --
+# no IRSA/EKS Pod Identity exists on this self-managed cluster, which rules out the
+# official Secrets Store CSI driver's AWS provider entirely; it hard-requires one of those
+# two) and exports DB_USERNAME/DB_PASSWORD before exec'ing the app. Off by default (local
+# uses a plain k8s Secret via templates/secret.yaml instead); prod turns it on. Requires
+# aws-cli + jq in the image (see Dockerfile) and node IAM permission scoped to secretName
+# (modules/k8s-nodes' db_secret_read policy in the infra repo).
+dbSecretFetch:
+  enabled: false
+  # Secrets Manager secret name (not ARN) holding {"username": "...", "password": "..."}.
+  secretName: ""
+  region: us-east-1

@@ -1,9 +1,8 @@
 replicaCount: 2
 
 image:
-  # Set to the real ECR/registry path + tag at deploy time (e.g. --set image.repository=...).
-  repository: contacts-micro-service-app
-  tag: latest
+  repository: 605448157849.dkr.ecr.us-east-1.amazonaws.com/contacts-micro-service
+  tag: 3f584f2e
   pullPolicy: IfNotPresent
 
 environment: prod
@@ -32,8 +31,16 @@ probes:
     periodSeconds: 5
     failureThreshold: 3
 
-# No plain db.* values in prod — populate a Kubernetes Secret named below (out-of-band, e.g.
-# synced from the rds module's Secrets Manager entry: infra repo's prod/rds unit outputs
-# master_user_secret_arn) with keys DB_HOST/DB_PORT/DB_NAME/DB_USERNAME/DB_PASSWORD.
+# host/port/name are plain (never secret); username/password are fetched at container
+# startup (dbSecretFetch below), not via a k8s Secret at all.
 db:
-  existingSecret: contacts-db-credentials
+  host: infra-prod-rds-postgres.cmx2qymsqgue.us-east-1.rds.amazonaws.com
+  port: "5432"
+  name: appdb
+
+dbSecretFetch:
+  enabled: true
+  # Secrets Manager secret name (not ARN) -- matches modules/rds's master_secret_name default
+  # in the infra repo, and the node IAM policy scoped to it (db_secret_read).
+  secretName: /rds/postgres/credentials
+  region: us-east-1
