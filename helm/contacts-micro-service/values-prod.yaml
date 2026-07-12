@@ -19,7 +19,10 @@ resources:
     cpu: 250m
     memory: 384Mi
   limits:
-    cpu: 1000m
+    # "1" not "1000m" -- the API server canonicalizes whole-number millicores to "1" on
+    # write, so "1000m" here would make Argo CD's diff perpetually see this field as
+    # OutOfSync (live value never matches the literal desired string).
+    cpu: "1"
     memory: 768Mi
 
 probes:
