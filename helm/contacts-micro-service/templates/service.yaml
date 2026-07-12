@@ -9,5 +9,7 @@ spec:
     {{- include "contacts-micro-service.selectorLabels" . | nindent 4 }}
   ports:
     - name: http
-      port: {{ .Values.service.port }}
+      # Not environment-dependent (never overridden in values-local.yaml/values-prod.yaml),
+      # so it's inlined here rather than parameterized via values.
+      port: 8080
       targetPort: http

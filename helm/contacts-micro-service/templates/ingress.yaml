@@ -19,5 +19,7 @@ spec:
               service:
                 name: {{ include "contacts-micro-service.name" . }}
                 port:
-                  number: {{ .Values.service.port }}
+                  # Matches the hardcoded port in templates/service.yaml — not
+                  # environment-dependent, so inlined rather than parameterized.
+                  number: 8080
 {{- end }}
