@@ -14,14 +14,23 @@ running on the self-managed Kubernetes cluster provisioned by
 - **Data**: one database (`appdb`) on the shared PostgreSQL RDS instance provisioned by `infra`'s
   `modules/rds` — not its own database instance.
 - **Image**: built (arm64, matching the cluster's Graviton nodes) and pushed to the `infra`-provisioned
-  ECR repo `contacts-micro-service`. `prod/cicd` in `infra` builds this repo and publishes to ECR on
-  push (see that repo's CLAUDE.md for what's still live in that pipeline vs. superseded by Argo CD).
+  ECR repo `contacts-micro-service`. `infra`'s `customer-api-pipeline` CodePipeline (`Source` →
+  `Build` only — no Deploy stage, since Argo CD owns that; see `infra`'s README) builds this repo and
+  publishes to ECR on push. Bumping this repo's own `values-prod.yaml` `image.tag` and pushing is what
+  actually changes the deployed version — the pipeline building a new image doesn't do that by itself.
 - **Credentials**: no Kubernetes Secret and no CSI driver (this is a self-managed cluster — no
   IRSA/EKS Pod Identity for the CSI driver's AWS provider to use). The container's own entrypoint
   fetches `DB_USERNAME`/`DB_PASSWORD` from Secrets Manager at startup using the node's instance-profile
   credentials (`dbSecretFetch` in the Helm chart) — see `helm/contacts-micro-service/templates/deployment.yaml`.
 - **Image pulls**: via `imagePullSecrets`, refreshed every 6h by an in-cluster CronJob (no
   `ecr-credential-provider` on kubelet — plain AL2023 EC2, not an EKS-optimized AMI).
+- **Auth**: write endpoints (`POST`/`PUT`/`DELETE` on `/api/contacts`) require a valid JWT issued by
+  Keycloak (`infra`'s `helm/keycloak`, realm `apps`); `GET` and `/actuator/**` stay open regardless
+  (k8s health probes hit `/actuator/**` without a token). See `src/main/java/com/senthil/contacts/config/SecurityConfig.java`
+  — enforcement is entirely driven by whether `spring.security.oauth2.resourceserver.jwt.issuer-uri`
+  is set (unset in local `docker-compose`, so nothing's enforced there; set via Helm values in
+  `kind`/prod). The autoconfigured `JwtDecoder` is lazy (`SupplierJwtDecoder`), so an unreachable
+  Keycloak doesn't crash the app at startup — confirmed directly, not assumed.
 
 ## Local development
 
